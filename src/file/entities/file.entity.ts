@@ -5,11 +5,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
 import { UserProfile } from '../../auth/entities/user-profile.entity';
 import { User } from '../../auth/entities/user.entity';
+import { Conversation } from '../../conversation/entities/conversation.entity';
+import { Message } from '../../conversation/entities/message.entity';
 
 @Entity()
 export class File extends BaseEntity {
@@ -42,4 +45,10 @@ export class File extends BaseEntity {
 
   @OneToOne(() => UserProfile, (up) => up.avatar)
   userProfile: UserProfile;
+
+  @OneToMany(() => Message, (m) => m.file)
+  messages: Message[];
+
+  @OneToMany(() => Conversation, (c) => c.avatar)
+  conversations: Conversation[];
 }

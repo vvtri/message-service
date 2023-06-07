@@ -15,7 +15,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import globalConfig, { GlobalConfig } from './common/configs/global.config';
 import { consumerConfig, kafkaConfig } from './common/configs/kafka.config';
+import { ConversationModule } from './conversation/conversation.module';
 import { FileModule } from './file/file.module';
+import { WebsocketModule } from './websocket/websocket.module';
 
 @Module({
   imports: [
@@ -31,9 +33,15 @@ import { FileModule } from './file/file.module';
         return addTransactionalDataSource(dataSource);
       },
     }),
-    KafkaModule.forRoot({ kafkaConfig, consumerConfig }),
+    KafkaModule.forRoot({
+      kafkaConfig,
+      consumerConfig,
+      shouldRunConsumerAsync: true,
+    }),
     AuthModule,
     FileModule,
+    WebsocketModule,
+    ConversationModule,
   ],
   controllers: [AppController],
   providers: [
