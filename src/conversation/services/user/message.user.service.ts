@@ -145,6 +145,8 @@ export class MessageUserService {
       userIds,
       user,
     });
+
+    return MessageResDto.forUser({ data: message });
   }
 
   @Transactional()

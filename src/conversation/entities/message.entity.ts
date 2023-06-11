@@ -25,7 +25,7 @@ export class Message extends BaseEntity {
   type: MessageType;
 
   // join user
-  @Column()
+  @Column({ nullable: true })
   userId: number;
 
   @ManyToOne(() => User, (u) => u.messages)

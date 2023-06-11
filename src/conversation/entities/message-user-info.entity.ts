@@ -1,5 +1,5 @@
 import { BaseEntity, PartialIndexWithSoftDelete } from 'common';
-import { MessageReadInfoStatus, PostReactionType } from 'shared';
+import { MessageReactionType, MessageReadInfoStatus } from 'shared';
 import {
   Column,
   Entity,
@@ -19,8 +19,8 @@ export class MessageUserInfo extends BaseEntity {
   @Column({ type: 'enum', enum: MessageReadInfoStatus })
   status: MessageReadInfoStatus;
 
-  @Column({ nullable: true, type: 'enum', enum: PostReactionType })
-  reaction: PostReactionType;
+  @Column({ nullable: true, type: 'enum', enum: MessageReactionType })
+  reaction: MessageReactionType;
 
   // join user
   @Column()

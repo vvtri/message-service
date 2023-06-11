@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PrefixType } from 'common';
 import { User } from '../../../auth/entities/user.entity';
@@ -24,5 +24,14 @@ export class ConversationUserController {
     @CurrentUser() user: User,
   ) {
     return this.conversationUserService.getList(query, user);
+  }
+
+  @Get('by-user/:userId')
+  @PaginationResponse(ConversationResDto)
+  getByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.conversationUserService.getByUser(userId, user);
   }
 }

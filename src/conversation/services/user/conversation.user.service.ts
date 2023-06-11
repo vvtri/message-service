@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ExpectationFailedExc } from 'common';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { Pagination } from 'nestjs-typeorm-paginate/dist/pagination';
 import { Transactional } from 'typeorm-transactional';
@@ -21,7 +22,7 @@ export class ConversationUserService {
 
   @Transactional()
   async getList(dto: GetListConversationUserReqDto, user: User) {
-    const { limit, page } = dto;
+    const { limit, page, isGroup } = dto;
     let { searchText } = dto;
 
     const qbCheckIsConversationMember = this.conversationMemberRepo
@@ -51,6 +52,10 @@ export class ConversationUserService {
         );
 
       qb.andWhereExists(qbSearchText).setParameter('searchText', searchText);
+    }
+
+    if (typeof isGroup === 'boolean') {
+      qb.andWhere('c.isGroup = :isGroup', { isGroup });
     }
 
     const { items, meta } = await paginate(qb, { page, limit });
@@ -90,11 +95,43 @@ export class ConversationUserService {
   @Transactional()
   async getDetail(id: number, user: User) {
     const conversation = await this.conversationRepo.findOneOrThrowNotFoundExc({
-      where: { id },
+      where: { id, conversationMembers: { userId: user.id } },
       relations: {
         avatar: true,
         conversationMembers: { user: { userProfile: { avatar: true } } },
       },
     });
+
+    return ConversationResDto.forUser({ data: conversation });
+  }
+
+  @Transactional()
+  async getByUser(userId: number, user: User) {
+    if (userId === user.id)
+      throw new ExpectationFailedExc({ statusCode: 1000 });
+
+    let conversation = await this.conversationRepo
+      .createQueryBuilder('c')
+      .innerJoin('c.conversationMembers', 'cm')
+      .groupBy('c.id')
+      .having(':userId = any(array_agg(cm.userId))', { userId })
+      .andHaving(':myUserId = any(array_agg(cm.userId))', {
+        myUserId: user.id,
+      })
+      .where('c.isGroup = false')
+      .select('c.id')
+      .getOne();
+
+    if (!conversation) return null;
+
+    conversation = await this.conversationRepo.findOneOrThrowNotFoundExc({
+      where: { id: conversation.id },
+      relations: {
+        avatar: true,
+        conversationMembers: { user: { userProfile: { avatar: true } } },
+      },
+    });
+
+    return ConversationResDto.forUser({ data: conversation });
   }
 }

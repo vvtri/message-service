@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { MessageType, WS_MESSAGE_EVENT } from 'shared';
 import { Server } from 'socket.io';
 import { UserResDto } from '../../auth/dtos/common/res/user.res.dto';
+import { UserProfileRepository } from '../../auth/repositories/user-profile.repository';
 import { UserRepository } from '../../auth/repositories/user.repository';
 import { ConversationMemberRepository } from '../../conversation/repositories/conversation-member.repository';
 import { ConversationRepository } from '../../conversation/repositories/conversation.repository';
+import { MessageRepository } from '../../conversation/repositories/message.repository';
 import {
   JoinRoomCallReqDto,
   SendReturnSignalCallReqDto,
@@ -25,6 +27,8 @@ export class CallWsService {
     private conversationRepo: ConversationRepository,
     private conversationMemberRepo: ConversationMemberRepository,
     private userRepo: UserRepository,
+    private messageRepo: MessageRepository,
+    private userProfileRepo: UserProfileRepository,
   ) {}
 
   async joinRoom(dto: JoinRoomCallReqDto, socket: SocketWithAuth) {
@@ -123,5 +127,20 @@ export class CallWsService {
       socket.emit(WS_MESSAGE_EVENT.INVALID_CALL);
       return false;
     }
+
+    this.createMsgJoin(socket.user.id, conversation.id).catch((err) =>
+      console.log('error happen when create message user joined call', err),
+    );
+  }
+
+  private async createMsgJoin(userId: number, conversationId: number) {
+    const userProfile = await this.userProfileRepo.findOneBy({ userId });
+
+    const message = this.messageRepo.create({
+      type: MessageType.SYSTEM,
+      content: `${userProfile.name} joined the call.`,
+      conversationId,
+    });
+    await this.messageRepo.save(message);
   }
 }

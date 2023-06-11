@@ -5,7 +5,7 @@ import {
   IsValidNumber,
   IsValidText,
 } from 'common';
-import { MessageType, PostReactionType } from 'shared';
+import { MessageReactionType, MessageType } from 'shared';
 import { PaginationReqDto } from '../../../../common/dtos/pagination.dto';
 
 export class GetListMessageUserReqDto extends PaginationReqDto {
@@ -40,6 +40,6 @@ export class ReactToMessageUserReqDto {
   @IsValidNumber({ min: 1 })
   messageId: number;
 
-  @IsValidEnum({ enum: PostReactionType })
-  reaction: PostReactionType;
+  @IsValidEnum({ enum: MessageReactionType })
+  reaction: MessageReactionType;
 }
