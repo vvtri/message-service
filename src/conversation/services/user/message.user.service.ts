@@ -23,6 +23,7 @@ import {
   ReactToMessageUserReqDto,
   SendMessageUserReqDto,
 } from '../../dtos/user/req/message.user.req.dto';
+import { ICreateConversationSocketUserResDto } from '../../dtos/user/res/conversation.socket.user.res.dto';
 import { Conversation } from '../../entities/conversation.entity';
 import { MessageUserInfo } from '../../entities/message-user-info.entity';
 import { Message } from '../../entities/message.entity';
@@ -125,6 +126,7 @@ export class MessageUserService {
     if ([MessageType.IMAGE, MessageType.FILE].includes(type)) {
       file = await this.fileRepo.findOneByOrThrowNotFoundExc({
         userId: user.id,
+        id: fileId,
       });
     }
 
@@ -201,10 +203,16 @@ export class MessageUserService {
         data: conversation,
         latestMessage: message,
       });
+
+      const res: ICreateConversationSocketUserResDto = {
+        conversation: conversationRes,
+        creatorId: user.id,
+      };
+
       this.chatGateway.server
         .to(userIds.map((item) => String(item)))
         .to(String(user.id))
-        .emit(WS_MESSAGE_EVENT.CONVERSATION_CREATED, conversationRes);
+        .emit(WS_MESSAGE_EVENT.CONVERSATION_CREATED, res);
     } else {
       const messageRes = MessageResDto.forUser({ data: message });
       this.chatGateway.server

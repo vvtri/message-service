@@ -10,19 +10,19 @@ export class ChatWsService {
   server: Server;
   constructor(private conversationMemberRepo: ConversationMemberRepository) {}
 
-  async handleConnection(client: SocketWithAuth) {
-    const user: User = client.user;
+  async handleConnection(socket: SocketWithAuth) {
+    const user: User = socket.data.user;
     const conversationMembers = await this.conversationMemberRepo.findBy({
       userId: user.id,
     });
 
-    client.join(
+    socket.join(
       conversationMembers.map((item) =>
         genWsConversationRoomName(item.conversationId),
       ),
     );
-    client.join(String(user.id));
-    client.emit('welcome', `user ${user.id} join`);
+    socket.join(String(user.id));
+    socket.emit('welcome', `user ${user.id} join`);
   }
 
   async handleDisconnect(client: SocketWithAuth) {}

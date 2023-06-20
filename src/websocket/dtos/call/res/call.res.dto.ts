@@ -1,26 +1,26 @@
-import { UserResDto } from '../../../../auth/dtos/common/res/user.res.dto';
+import { CallJoinerInfoIntDto } from '../../int/joiner-info.int.dto';
 
-export interface JoinerInfo {
-  user: UserResDto;
-  socketId: string;
-}
-
-export class JoinedRoomCallResDto implements JoinerInfo {
-  user: UserResDto;
-  socketId: string;
-}
+export class JoinedRoomCallResDto extends Array<CallJoinerInfoIntDto> {}
 
 export class NewUserJoinedCallResDto {
   signal: any;
-  newUserData: JoinerInfo;
+  newUserData: CallJoinerInfoIntDto;
 }
 
 export class ReceiveReturnSignalCallReqDto {
   signal: any;
 
-  fromData: JoinerInfo;
+  fromData: CallJoinerInfoIntDto;
 }
 
 export class UserLeftRoomCallReqDto {
   socketId: string;
+}
+
+export class ToggleMicCallResDto {
+  joinerInfo: CallJoinerInfoIntDto;
+}
+
+export class ToggleCameraCallResDto {
+  joinerInfo: CallJoinerInfoIntDto;
 }

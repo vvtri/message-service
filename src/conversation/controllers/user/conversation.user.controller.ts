@@ -27,11 +27,15 @@ export class ConversationUserController {
   }
 
   @Get('by-user/:userId')
-  @PaginationResponse(ConversationResDto)
   getByUserId(
     @Param('userId', ParseIntPipe) userId: number,
     @CurrentUser() user: User,
   ) {
     return this.conversationUserService.getByUser(userId, user);
+  }
+
+  @Get(':id')
+  getDetail(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+    return this.conversationUserService.getDetail(id, user);
   }
 }

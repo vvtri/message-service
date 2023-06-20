@@ -13,3 +13,11 @@ export class SendReturnSignalCallReqDto {
 
   toSocket: string;
 }
+
+export class ToggleMicCallReqDto {
+  isMuteMic: boolean;
+}
+
+export class ToggleCameraCallReqDto {
+  isOffCamera: boolean;
+}

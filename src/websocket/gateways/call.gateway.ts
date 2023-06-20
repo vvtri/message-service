@@ -15,6 +15,8 @@ import {
   JoinRoomCallReqDto,
   SendReturnSignalCallReqDto,
   SendSignalCallReqDto,
+  ToggleCameraCallReqDto,
+  ToggleMicCallReqDto,
 } from '../dtos/call/req/call.req.dto';
 import { WebSocketExceptionsFilter } from '../filters/websocket.filter';
 import { SocketWithAuth } from '../interfaces/websocket.interface';
@@ -46,25 +48,51 @@ export class CallGateway
   @SubscribeMessage(WS_MESSAGE_EVENT.JOIN_ROOM)
   joinRoom(
     @MessageBody() body: JoinRoomCallReqDto,
-    @ConnectedSocket() client: SocketWithAuth,
+    @ConnectedSocket() socket: SocketWithAuth,
   ) {
-    return this.callWsService.joinRoom(body, client);
+    console.log('WS_MESSAGE_EVENT.JOIN_ROOM', socket.data.user.id);
+    console.log('time', new Date().toISOString());
+    return this.callWsService.joinRoom(body, socket);
   }
 
   @SubscribeMessage(WS_MESSAGE_EVENT.SEND_SIGNAL)
   sendSignal(
     @MessageBody() body: SendSignalCallReqDto,
-    @ConnectedSocket() client: SocketWithAuth,
+    @ConnectedSocket() socket: SocketWithAuth,
   ) {
-    return this.callWsService.sendSignal(body, client);
+    console.log('WS_MESSAGE_EVENT.SEND_SIGNAL', socket.data.user.id);
+    console.log('time', new Date().toISOString());
+    return this.callWsService.sendSignal(body, socket);
   }
 
   @SubscribeMessage(WS_MESSAGE_EVENT.SEND_RETURN_SIGNAL)
   sendReturnSignal(
     @MessageBody() body: SendReturnSignalCallReqDto,
-    @ConnectedSocket() client: SocketWithAuth,
+    @ConnectedSocket() socket: SocketWithAuth,
   ) {
-    return this.callWsService.sendReturnSignal(body, client);
+    console.log('WS_MESSAGE_EVENT.SEND_RETURN_SIGNAL', socket.data.user.id);
+    console.log('time', new Date().toISOString());
+    return this.callWsService.sendReturnSignal(body, socket);
+  }
+
+  @SubscribeMessage(WS_MESSAGE_EVENT.TOGGLE_MIC)
+  toggleMic(
+    @MessageBody() body: ToggleMicCallReqDto,
+    @ConnectedSocket() socket: SocketWithAuth,
+  ) {
+    console.log('WS_MESSAGE_EVENT.TOGGLE_MIC', socket.data.user.id);
+    console.log('time', new Date().toISOString());
+    return this.callWsService.toggleMic(body, socket);
+  }
+
+  @SubscribeMessage(WS_MESSAGE_EVENT.TOGGLE_CAMERA)
+  toggleCamera(
+    @MessageBody() body: ToggleCameraCallReqDto,
+    @ConnectedSocket() socket: SocketWithAuth,
+  ) {
+    console.log('WS_MESSAGE_EVENT.TOGGLE_CAMERA', socket.data.user.id);
+    console.log('time', new Date().toISOString());
+    return this.callWsService.toggleCamera(body, socket);
   }
 
   afterInit(server: Server) {

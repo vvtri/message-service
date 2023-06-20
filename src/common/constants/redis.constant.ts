@@ -1,0 +1,4 @@
+export const REDIS_KEY = {
+  ROOM_JOINERS: 'ROOM_JOINERS',
+  SOCKET_TO_ROOM: 'SOCKET_TO_ROOM',
+};

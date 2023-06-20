@@ -21,6 +21,10 @@ const globalConfig = {
     verificationExpires: 86400, // seconds = 24h
   },
 
+  redis: {
+    url: process.env.REDIS_URL,
+  },
+
   sendGrid: {
     apiKey: process.env.SG_API_KEY,
     sender: process.env.SG_SENDER,

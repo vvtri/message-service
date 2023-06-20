@@ -25,7 +25,7 @@ export class AuthWsService {
 
         if (!user) throw new Error('User not found');
 
-        socket.user = user;
+        socket.data.user = user;
         next();
       } catch (error) {
         console.log('error', error);

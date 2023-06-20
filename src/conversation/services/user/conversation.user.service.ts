@@ -94,8 +94,13 @@ export class ConversationUserService {
 
   @Transactional()
   async getDetail(id: number, user: User) {
+    await this.conversationMemberRepo.findOneByOrThrowNotFoundExc({
+      conversationId: id,
+      userId: user.id,
+    });
+
     const conversation = await this.conversationRepo.findOneOrThrowNotFoundExc({
-      where: { id, conversationMembers: { userId: user.id } },
+      where: { id },
       relations: {
         avatar: true,
         conversationMembers: { user: { userProfile: { avatar: true } } },
@@ -103,6 +108,14 @@ export class ConversationUserService {
     });
 
     return ConversationResDto.forUser({ data: conversation });
+  }
+
+  @Transactional()
+  async countUnreadConversation(user: User) {
+    const qbCheckIsConversationMember = this.conversationMemberRepo
+      .createQueryBuilder('cm')
+      .where('cm.userId = :userId')
+      .andWhere('cm.conversationId = c.id');
   }
 
   @Transactional()
