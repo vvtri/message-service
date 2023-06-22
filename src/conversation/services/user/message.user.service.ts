@@ -81,7 +81,8 @@ export class MessageUserService {
 
   @Transactional()
   async sendMessage(dto: SendMessageUserReqDto, user: User) {
-    const { conversationId, fileId, type, content, userIds } = dto;
+    const { conversationId, fileId, type, content } = dto;
+    const { userIds } = dto;
     let conversation: Conversation;
     let isCreateConversation = false;
     let file: File;
@@ -98,18 +99,18 @@ export class MessageUserService {
       });
     } else {
       const isGroup = userIds.length >= 2;
+
       const qb = this.conversationRepo
         .createQueryBuilder('c')
         .innerJoin('c.conversationMembers', 'cm')
-        .andWhere('cm.userId IN (:...userIds)', { userIds })
         .groupBy('c.id')
-        .having('count(*) > 2');
-
-      if (userIds.length > 2) {
-        qb.andWhere('c.isGroup = true');
-      } else {
-        qb.andWhere('c.isGroup = false');
-      }
+        .having('count(*) = :conversationMemberCount', {
+          conversationMemberCount: userIds.length + 1,
+        })
+        .andHaving('array_agg(cm.userId) @> array[:...userIds]::int[]', {
+          userIds: [...userIds, user.id],
+        })
+        .andWhere('c.isGroup = :isGroup', { isGroup });
 
       conversation = await qb.getOne();
 
@@ -238,7 +239,7 @@ export class MessageUserService {
       .join(', ')}`;
 
     const conversation = this.conversationRepo.create({
-      isGroup: false,
+      isGroup,
       name: conversationName,
     });
     await this.conversationRepo.save(conversation);
@@ -254,7 +255,7 @@ export class MessageUserService {
       conversation,
       addedId: undefined,
       role: isGroup
-        ? ConversationMemberRole.ADMIN
+        ? ConversationMemberRole.OWNER
         : ConversationMemberRole.MEMBER,
       user,
     });

@@ -67,9 +67,7 @@ export class ConversationUserService {
             where: { id: item.id },
             relations: {
               avatar: true,
-              conversationMembers: item.isGroup
-                ? true
-                : { user: { userProfile: { avatar: true } } },
+              conversationMembers: { user: { userProfile: { avatar: true } } },
             },
           }),
           this.messageRepo.findFirst({
