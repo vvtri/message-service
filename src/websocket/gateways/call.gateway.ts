@@ -91,7 +91,6 @@ export class CallGateway
     @ConnectedSocket() socket: SocketWithAuth,
   ) {
     console.log('WS_MESSAGE_EVENT.TOGGLE_CAMERA', socket.data.user.id);
-    console.log('time', new Date().toISOString());
     return this.callWsService.toggleCamera(body, socket);
   }
 

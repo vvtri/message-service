@@ -131,8 +131,6 @@ export class CallWsService {
     const roomId = this.getCallRoomId(socket);
     if (!roomId) return;
 
-    console.log('socket', await this.server.in(roomId).fetchSockets());
-
     const joinerInfo = await this.getRoomJoinerData(roomId, socket.id);
 
     await this.delRoomJoinerData(socket);
@@ -144,7 +142,6 @@ export class CallWsService {
       socketId: socket.id,
       user: joinerInfo.user,
     });
-    console.log(`push to left room to ${roomId}`);
   }
 
   // handler function

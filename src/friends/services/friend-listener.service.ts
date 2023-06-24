@@ -10,7 +10,9 @@ import {
   FriendRequestStatus,
   MessageType,
 } from 'shared';
+import { In } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
+import { UserProfileRepository } from '../../auth/repositories/user-profile.repository';
 import { ConversationMemberRepository } from '../../conversation/repositories/conversation-member.repository';
 import { ConversationRepository } from '../../conversation/repositories/conversation.repository';
 import { MessageRepository } from '../../conversation/repositories/message.repository';
@@ -22,6 +24,7 @@ export class FriendListenerService {
     private conversationRepo: ConversationRepository,
     private conversationMemberRepo: ConversationMemberRepository,
     private messageRepo: MessageRepository,
+    private userProfileRepo: UserProfileRepository,
   ) {}
 
   @Transactional()
@@ -47,40 +50,30 @@ export class FriendListenerService {
   private async handleAddedFriend(
     friendRequest: FriendRequestUpdatedKafkaPayload,
   ) {
-    console.log(
-      'query',
-      this.conversationMemberRepo
-        .createQueryBuilder('cm')
-        .select('cm.conversationId')
-        .groupBy('cm.conversationId')
-        .having('count(*) = 2')
-        .andHaving(':requesterId = any(array_arr(cm.user_id))', {
-          requesterId: friendRequest.requesterId,
-        })
-        .andHaving(':beRequestedId = any(array_arr(cm.user_id))', {
-          beRequestedId: friendRequest.beRequestedId,
-        })
-        .getQueryAndParameters(),
-    );
+    const userIds = [friendRequest.beRequestedId, friendRequest.requesterId];
 
-    const existed = await this.conversationMemberRepo
-      .createQueryBuilder('cm')
-      .select('cm.conversationId')
-      .groupBy('cm.conversationId')
+    const qb = this.conversationRepo
+      .createQueryBuilder('c')
+      .innerJoin('c.conversationMembers', 'cm')
+      .groupBy('c.id')
       .having('count(*) = 2')
-      .andHaving(':requesterId = any(array_agg(cm.user_id))', {
-        requesterId: friendRequest.requesterId,
+      .andHaving('array_agg(cm.userId) @> array[:...userIds]::int[]', {
+        userIds,
       })
-      .andHaving(':beRequestedId = any(array_agg(cm.user_id))', {
-        beRequestedId: friendRequest.beRequestedId,
-      })
-      .getExists();
+      .andWhere('c.isGroup = :false');
 
-    console.log('conversationId', existed);
-    if (existed) return;
+    let conversation = await qb.getOne();
 
-    const conversation = this.conversationRepo.create({
+    if (conversation) return;
+
+    const users = await this.userProfileRepo.findBy({ userId: In(userIds) });
+
+    conversation = this.conversationRepo.create({
       isGroup: false,
+      name: users
+        .map((item) => item.name)
+        .filter(Boolean)
+        .join(', '),
     });
     await this.conversationRepo.save(conversation);
     const requesterMember = this.conversationMemberRepo.create({
@@ -94,7 +87,7 @@ export class FriendListenerService {
       role: ConversationMemberRole.MEMBER,
     });
 
-    const firstMessage = await this.messageRepo.create({
+    const firstMessage = this.messageRepo.create({
       content: `You are now connected on SimFri`,
       conversation,
       type: MessageType.SYSTEM,
