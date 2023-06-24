@@ -42,8 +42,6 @@ export class CallWsService {
   async joinRoom(dto: JoinRoomCallReqDto, socket: SocketWithAuth) {
     const { roomId } = dto;
 
-    console.log('roomId', roomId);
-
     const isValid = await this.validateCall(roomId, socket);
     if (!isValid) return;
 

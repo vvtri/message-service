@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ExpectationFailedExc } from 'common';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import {
   ConversationMemberRole,
   MessageReadInfoStatus,
   MessageType,
+  UserStatus,
   WS_MESSAGE_EVENT,
 } from 'shared';
 import { In } from 'typeorm';
@@ -99,6 +101,14 @@ export class MessageUserService {
       });
     } else {
       const isGroup = userIds.length >= 2;
+
+      const users = await this.userRepo.countBy({
+        id: In(userIds),
+        status: UserStatus.ACTIVE,
+      });
+
+      if (users !== userIds.length)
+        throw new ExpectationFailedExc({ statusCode: 1000 });
 
       const qb = this.conversationRepo
         .createQueryBuilder('c')

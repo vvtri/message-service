@@ -36,7 +36,9 @@ export class JwtAuthenUserStrategy extends PassportStrategy(
       });
     }
 
-    const [user] = await this.userRepo.find({ where: { id: userId } });
+    const [user] = await this.userRepo.find({
+      where: { id: userId, status: UserStatus.ACTIVE },
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
