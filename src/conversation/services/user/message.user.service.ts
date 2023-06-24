@@ -210,10 +210,15 @@ export class MessageUserService {
         creatorId: user.id,
       };
 
+      const socketIds = [...userIds, user.id].map((item) => String(item));
+
       this.chatGateway.server
-        .to(userIds.map((item) => String(item)))
-        .to(String(user.id))
+        .to(socketIds)
         .emit(WS_MESSAGE_EVENT.CONVERSATION_CREATED, res);
+
+      this.chatGateway.server
+        .in(socketIds)
+        .socketsJoin(genWsConversationRoomName(conversation.id));
     } else {
       const messageRes = MessageResDto.forUser({ data: message });
       this.chatGateway.server

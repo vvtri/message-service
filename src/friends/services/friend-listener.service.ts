@@ -60,7 +60,7 @@ export class FriendListenerService {
       .andHaving('array_agg(cm.userId) @> array[:...userIds]::int[]', {
         userIds,
       })
-      .andWhere('c.isGroup = :false');
+      .andWhere('c.isGroup = false');
 
     let conversation = await qb.getOne();
 
